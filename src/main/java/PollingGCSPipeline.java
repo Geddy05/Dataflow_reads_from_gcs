@@ -107,7 +107,7 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
                         continue;
                     }
                     if (shouldFilterObject(object)) {
-                        // Skip file due to iinitial timestamp
+                        // Skip file due to initial timestamp
                         continue;
                     }
                     Integer newDepth = getObjectDepth(object.getName());

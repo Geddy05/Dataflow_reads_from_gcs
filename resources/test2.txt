@@ -1,0 +1,2 @@
+{"username":"John DO","userId" : 3, "teamId" : 1, "points" : 10, "timestamp" : "2022-10-05T14:48:00Z"}
+{"username":"Jane DO","userId" : 2, "teamId" : 2, "points" : 12, "timestamp" : "2022-10-05T14:48:12Z"}
