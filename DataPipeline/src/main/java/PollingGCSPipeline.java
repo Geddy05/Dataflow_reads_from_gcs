@@ -107,7 +107,7 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
                         continue;
                     }
                     if (shouldFilterObject(object)) {
-                        // Skip file due to iinitial timestamp
+                        // Skip file due to initial timestamp
                         continue;
                     }
                     Integer newDepth = getObjectDepth(object.getName());
@@ -123,7 +123,6 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
 
         @Override
         public Watch.Growth.PollResult<String> apply(String element, Context c) throws Exception {
-            Instant now = Instant.now();
             GcsPath path = GcsPath.fromUri(element);
             return Watch.Growth.PollResult.incomplete(getMatchingObjects(path));
         }
@@ -131,6 +130,8 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
 
     @Override
     public PCollection<FileIO.ReadableFile> expand(PBegin input) {
+
+        // Find the buckets in the given path:
         directories =
                 input
                         .apply("Start-Pipeline", Create.of(inputFilePattern))
