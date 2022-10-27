@@ -6,7 +6,12 @@
 
     <groupId>org.example</groupId>
     <artifactId>ReadFromGCS</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>DataGenerator</module>
+        <module>DataPipeline</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -14,40 +19,5 @@
         <beam.version>2.41.0</beam.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-sdks-java-core</artifactId>
-            <version>${beam.version}</version>
-        </dependency>
-
-        <!--
-          By default, the starter project has a dependency on the Beam DirectRunner
-          to enable development and testing of pipelines. To run on another of the
-          Beam runners, add its module to this pom.xml according to the
-          runner-specific setup instructions on the Beam website:
-            http://beam.apache.org/documentation/#runners
-        -->
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-runners-direct-java</artifactId>
-            <version>${beam.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-runners-google-cloud-dataflow-java</artifactId>
-            <version>${beam.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.beam</groupId>
-            <artifactId>beam-sdks-java-io-google-cloud-platform</artifactId>
-            <version>${beam.version}</version>
-        </dependency>
-    </dependencies>
 
 </project>
