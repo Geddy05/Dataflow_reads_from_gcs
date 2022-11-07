@@ -16,9 +16,7 @@ import org.joda.time.Instant;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.beam.vendor.guava.v26_0_jre.com.google.common.base.MoreObjects.firstNonNull;
 
@@ -26,10 +24,6 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
 
     private String inputFilePattern;
     private String rfcStartDateTime;
-    private Integer fileReadConcurrency = 30;
-    private Boolean lowercaseSourceColumns = false;
-    private Map<String, String> renameColumns = new HashMap<String, String>();
-    private Boolean hashRowId = false;
     PCollection<String> directories = null;
 
     public PollingGCSPipeline(
@@ -47,11 +41,15 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
         private final DateTime dateFrom;
         private final String delimiter;
 
-        public GCSPollFn(Integer minDepth, Integer maxDepth, DateTime dateFrom, String delimiter){
+        public GCSPollFn(Integer minDepth, Integer maxDepth, String dateFrom, String delimiter){
             this.maxDepth = maxDepth;
             this.minDepth = minDepth;
-            this.dateFrom = dateFrom;
             this.delimiter = delimiter;
+            if (dateFrom != null) {
+                this.dateFrom = DateTime.parseRfc3339(dateFrom);
+            } else {
+                this.dateFrom = DateTime.parseRfc3339("1970-01-01T00:00:00.00Z");
+            }
         }
 
         private boolean shouldFilterObject(StorageObject object) {
@@ -79,7 +77,6 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
             return util;
         }
 
-
         private List<TimestampedValue<String>> getMatchingObjects(GcsPath path) throws IOException {
             List<TimestampedValue<String>> result = new ArrayList<>();
             Integer baseDepth = getObjectDepth(path.getObject());
@@ -98,10 +95,6 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
                 }
                 for (StorageObject object : items) {
                     String fullName = "gs://" + object.getBucket() + "/" + object.getName();
-                    if (!object.getName().endsWith("/")) {
-                        // This object is not a directory, and should be ignored.
-                        continue;
-                    }
                     if (object.getName().equals(path.getObject())) {
                         // Output only direct children and not the directory itself.
                         continue;
@@ -120,7 +113,6 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
             return result;
         }
 
-
         @Override
         public Watch.Growth.PollResult<String> apply(String element, Context c) throws Exception {
             GcsPath path = GcsPath.fromUri(element);
@@ -134,11 +126,11 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
         // Find the buckets in the given path:
         directories =
                 input
-                        .apply("Start-Pipeline", Create.of(inputFilePattern))
+                        .apply("StartPoll", Create.of(inputFilePattern))
                         .apply("FindFiles",
-                                Watch.growthOf(new GCSPollFn(1, 1, null, "/"))
-                                        .withPollInterval(Duration.standardSeconds(120)))
-                        .apply(Values.create());
+                                Watch.growthOf(new GCSPollFn(1, 1, this.rfcStartDateTime, "/"))
+                                        .withPollInterval(Duration.standardSeconds(60)))
+                    .apply(Values.create());
 
         return directories
                 .apply(

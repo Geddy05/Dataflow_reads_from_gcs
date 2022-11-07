@@ -34,10 +34,11 @@ public class DataPipeline {
             // Use OutputReceiver.output to emit the output element.
             Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new GsonUTCDateAdapter()).create();
             System.out.println("received JSON object: " + c.element());
-            List<Player> players = gson.fromJson(c.element(), new TypeToken<List<Player>>(){}.getType());
-            for (Player player: players) {
-                c.output(player);
-            }
+            Player player = gson.fromJson(c.element(), new TypeToken<Player>(){}.getType());
+            c.output(player);
+//            for (Player player: players) {
+//                c.output(player);
+//            }
         }
     }
 
@@ -60,8 +61,8 @@ public class DataPipeline {
 
     private TableReference createLogTabelReference(){
         TableReference tableRef = new TableReference();
-        tableRef.setProjectId("geddy-playground");
-        tableRef.setDatasetId("playerDemo");
+        tableRef.setProjectId("geddy-dataflow-playground");
+        tableRef.setDatasetId("leaderboardDemo");
         tableRef.setTableId("leaderboard");
         return tableRef;
     }
@@ -102,6 +103,7 @@ public class DataPipeline {
                 .withSchema(new TableSchema().setFields(logTabelSchema))
                 .withFailedInsertRetryPolicy(InsertRetryPolicy.retryTransientErrors())
                 .withExtendedErrorInfo()
+                .withMethod(BigQueryIO.Write.Method.STREAMING_INSERTS)
                 .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_IF_NEEDED)
                 .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_APPEND));
 
@@ -128,7 +130,7 @@ public class DataPipeline {
                 PipelineOptionsFactory.fromArgs(args).withValidation().as(GCSPipelineOptions.class);
         // For cloud execution, set the Google Cloud project, staging location,
         // and set DataflowRunner.
-        options.setInput("gs://files2809");
+//        options.setInput("gs://files2810");
         options.setStreaming(true);
 
         new DataPipeline().buildPipeline(options);

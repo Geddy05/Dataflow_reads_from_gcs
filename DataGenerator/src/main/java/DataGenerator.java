@@ -26,7 +26,7 @@ public class DataGenerator {
     for (int i = 0; i < amountOfPlayers; i++){
       Player player = new Player();
       player.setUsername(faker.name().username());
-      player.setUserId(faker.number().numberBetween(0,amountOfPlayers));
+      player.setUserId(i);
       player.setTeamId(faker.number().numberBetween(0,amountOfTeams));
       players.add(player);
     }
@@ -47,13 +47,37 @@ public class DataGenerator {
 
   }
 
+  private static String generateFilePath() {
+    // Add create bucket and file name based on current datetime.
+    Date date = new Date();
+    DateFormat dateFormatPart1 = new SimpleDateFormat("yyyy-MM/dd", Locale.getDefault());
+    DateFormat dateFormatPart2 = new SimpleDateFormat("HH/mm:ss", Locale.getDefault());
+    String datePart1 = dateFormatPart1.format(date);
+    String datePart2 = dateFormatPart2.format(date);
+    return datePart1+"/"+datePart2;
+  }
+
+  private static String createScores(List<Player> players, Faker faker) throws InterruptedException {
+    Gson gson = new Gson();
+    StringBuilder scores = new StringBuilder();
+
+    for (int i = 0; i < faker.number().numberBetween(0,100); i++){
+      Player player = players.get(faker.number().numberBetween(0,amountOfPlayers-1));
+      ScoreModel scoreModel = generateData(player);
+      scores.append(gson.toJson(scoreModel)).append(System.lineSeparator());
+      TimeUnit.MILLISECONDS.sleep(faker.number().numberBetween(500,1000));
+    }
+
+    return scores.toString();
+  }
+
   public static void main(String[] args) throws InterruptedException {
 
     // Instantiates a client
     Storage storage = StorageOptions.getDefaultInstance().getService();
 
     // The name for the top level bucket
-    String mainbucketName = "files2809";
+    String mainbucketName = "files2810";
 
     // Create Players
     List<Player> players = getPlayers();
@@ -73,29 +97,5 @@ public class DataGenerator {
 
       System.out.printf("Bucket %s created. %n", filePath);
     }
-  }
-
-  private static String generateFilePath() {
-    // Add create bucket and file name based on current datetime.
-    Date date = new Date();
-    DateFormat dateFormatPart1 = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-    DateFormat dateFormatPart2 = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-    String datePart1 = dateFormatPart1.format(date);
-    String datePart2 = dateFormatPart2.format(date);
-    String bucketName = datePart1+"/"+datePart2;
-    return bucketName;
-  }
-
-  private static String createScores(List<Player> players, Faker faker) throws InterruptedException {
-    List<ScoreModel> scores = new ArrayList<>();
-    for (int i = 0; i < faker.number().numberBetween(0,100); i++){
-      Player player = players.get(faker.number().numberBetween(0,amountOfPlayers-1));
-      ScoreModel scoreModel = generateData(player);
-      scores.add(scoreModel);
-      TimeUnit.MILLISECONDS.sleep(faker.number().numberBetween(250,750));
-    }
-
-    Gson gson = new Gson();
-    return gson.toJson(scores);
   }
 }
