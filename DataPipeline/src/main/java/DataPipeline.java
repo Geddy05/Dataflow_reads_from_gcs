@@ -1,14 +1,11 @@
+import pTransforms.JsonToPlayerPipeline;
+import pTransforms.PollingGCSPipeline;
 import com.google.api.services.bigquery.model.TableFieldSchema;
 import com.google.api.services.bigquery.model.TableReference;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.bigquery.model.TableSchema;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import models.Player;
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.io.FileIO;
-import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO;
 import org.apache.beam.sdk.io.gcp.bigquery.InsertRetryPolicy;
 import org.apache.beam.sdk.io.gcp.bigquery.WriteResult;
@@ -16,31 +13,14 @@ import org.apache.beam.sdk.options.PipelineOptionsFactory;
 import org.apache.beam.sdk.transforms.DoFn;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.transforms.ParDo;
-import org.apache.beam.sdk.transforms.Reshuffle;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TypeDescriptors;
-import utils.GsonUTCDateAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
 public class DataPipeline {
-
-    static class JsonToPlayer extends DoFn<String, Player> {
-        @ProcessElement
-        public void processElement(ProcessContext c) {
-            // Use OutputReceiver.output to emit the output element.
-            Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new GsonUTCDateAdapter()).create();
-            System.out.println("received JSON object: " + c.element());
-            Player player = gson.fromJson(c.element(), new TypeToken<Player>(){}.getType());
-            c.output(player);
-//            for (Player player: players) {
-//                c.output(player);
-//            }
-        }
-    }
 
     static class PlayerToTableRow extends DoFn<Player, TableRow> {
         @ProcessElement
@@ -87,13 +67,8 @@ public class DataPipeline {
             // rfcStartDateTime: Only read files with an updated timestamp greater than the rfcStartDateTime.
             .apply("Read files from Cloud Storage",
                 new PollingGCSPipeline(options.getInput(),null))
-            // Number files read in parallel
-            .apply("FileReadConcurrency",
-                        Reshuffle.<FileIO.ReadableFile>viaRandomKey().withNumBuckets(1))
-            .apply("ReadFiles", TextIO.readFiles())
-            // Because we split each line to a single event we cen get a high fan-out.
-            .apply("ReshuffleRecords", Reshuffle.viaRandomKey())
-            .apply("Parse Json", ParDo.of(new JsonToPlayer()));
+            // File content to Player objects
+            .apply("File to Players", new JsonToPlayerPipeline());
 
         // Write individual scores in to BigQuery
         WriteResult result = playerScore
@@ -128,9 +103,6 @@ public class DataPipeline {
 
         GCSPipelineOptions options =
                 PipelineOptionsFactory.fromArgs(args).withValidation().as(GCSPipelineOptions.class);
-        // For cloud execution, set the Google Cloud project, staging location,
-        // and set DataflowRunner.
-//        options.setInput("gs://files2810");
         options.setStreaming(true);
 
         new DataPipeline().buildPipeline(options);
