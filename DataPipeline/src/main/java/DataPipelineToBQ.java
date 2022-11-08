@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class DataPipeline {
+public class DataPipelineToBQ {
 
     static class PlayerToTableRow extends DoFn<Player, TableRow> {
         @ProcessElement
@@ -105,7 +105,7 @@ public class DataPipeline {
                 PipelineOptionsFactory.fromArgs(args).withValidation().as(GCSPipelineOptions.class);
         options.setStreaming(true);
 
-        new DataPipeline().buildPipeline(options);
+        new DataPipelineToBQ().buildPipeline(options);
 
     }
 }

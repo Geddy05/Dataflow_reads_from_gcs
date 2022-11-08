@@ -12,6 +12,7 @@ import org.apache.beam.sdk.transforms.ParDo;
 import org.apache.beam.sdk.transforms.Reshuffle;
 import org.apache.beam.sdk.values.PBegin;
 import org.apache.beam.sdk.values.PCollection;
+import org.joda.time.Instant;
 import utils.GsonUTCDateAdapter;
 
 import java.util.Date;
@@ -25,7 +26,8 @@ public class JsonToPlayerPipeline extends PTransform<PCollection<FileIO.Readable
       Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new GsonUTCDateAdapter()).create();
       System.out.println("received JSON object: " + c.element());
       Player player = gson.fromJson(c.element(), new TypeToken<Player>(){}.getType());
-      c.output(player);
+
+      c.outputWithTimestamp(player, Instant.now());
     }
   }
 
