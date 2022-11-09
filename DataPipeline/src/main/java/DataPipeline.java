@@ -1,3 +1,10 @@
+import org.apache.beam.sdk.transforms.Create;
+import org.apache.hadoop.hbase.client.Mutation;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.util.Bytes;
+import com.google.cloud.bigtable.beam.CloudBigtableIO;
+import com.google.cloud.bigtable.beam.CloudBigtableTableConfiguration;
+
 import pTransforms.JsonToPlayerPipeline;
 import pTransforms.PollingGCSPipeline;
 import com.google.api.services.bigquery.model.TableFieldSchema;
@@ -69,6 +76,7 @@ public class DataPipeline {
                 new PollingGCSPipeline(options.getInput(),null))
             // File content to Player objects
             .apply("File to Players", new JsonToPlayerPipeline());
+
 
         // Write individual scores in to BigQuery
         WriteResult result = playerScore

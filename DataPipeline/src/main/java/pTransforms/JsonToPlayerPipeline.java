@@ -33,13 +33,12 @@ public class JsonToPlayerPipeline extends PTransform<PCollection<FileIO.Readable
   public PCollection<Player> expand(PCollection<FileIO.ReadableFile> input) {
 
     // Number files read in parallel
-    PCollection<Player> players = input.apply("FileReadConcurrency",
+
+    return input.apply("FileReadConcurrency",
         Reshuffle.<FileIO.ReadableFile>viaRandomKey().withNumBuckets(1))
         .apply("ReadFiles", TextIO.readFiles())
         // Because we split each line to a single event we cen get a high fan-out.
         .apply("ReshuffleRecords", Reshuffle.viaRandomKey())
         .apply("Parse Json To Player", ParDo.of(new JsonToPlayer()));
-
-    return players;
   }
 }
