@@ -27,7 +27,7 @@ public class JsonToPlayerPipeline extends PTransform<PCollection<FileIO.Readable
       System.out.println("received JSON object: " + c.element());
       Player player = gson.fromJson(c.element(), new TypeToken<Player>(){}.getType());
 
-      c.outputWithTimestamp(player, Instant.now());
+      c.outputWithTimestamp(player, new Instant());
     }
   }
 

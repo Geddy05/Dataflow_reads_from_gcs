@@ -18,7 +18,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class DataGenerator {
 
   static final int amountOfPlayers = 150;
-  static final int amountOfTeams = 50;
+  static final int amountOfTeams = 10;
 
   public static List<Player> getPlayers(){
     Faker faker = new Faker();
@@ -61,11 +61,11 @@ public class DataGenerator {
     Gson gson = new Gson();
     StringBuilder scores = new StringBuilder();
 
-    for (int i = 0; i < faker.number().numberBetween(0,100); i++){
+    for (int i = 0; i < faker.number().numberBetween(20,40); i++){
       Player player = players.get(faker.number().numberBetween(0,amountOfPlayers-1));
       ScoreModel scoreModel = generateData(player);
       scores.append(gson.toJson(scoreModel)).append(System.lineSeparator());
-      TimeUnit.MILLISECONDS.sleep(faker.number().numberBetween(500,1000));
+      TimeUnit.MILLISECONDS.sleep(faker.number().numberBetween(500,2500));
     }
 
     return scores.toString();
