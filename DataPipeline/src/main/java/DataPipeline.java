@@ -1,10 +1,3 @@
-import org.apache.beam.sdk.transforms.Create;
-import org.apache.hadoop.hbase.client.Mutation;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
-import com.google.cloud.bigtable.beam.CloudBigtableIO;
-import com.google.cloud.bigtable.beam.CloudBigtableTableConfiguration;
-
 import pTransforms.JsonToPlayerPipeline;
 import pTransforms.PollingGCSPipeline;
 import com.google.api.services.bigquery.model.TableFieldSchema;
@@ -46,11 +39,11 @@ public class DataPipeline {
         }
     }
 
-    private TableReference createLogTabelReference(){
+    private TableReference createLogTabelReference(BigqueryOptions options){
         TableReference tableRef = new TableReference();
-        tableRef.setProjectId("geddy-dataflow-playground");
-        tableRef.setDatasetId("leaderboardDemo");
-        tableRef.setTableId("leaderboard");
+        tableRef.setProjectId(options.getBigqueryProjectId());
+        tableRef.setDatasetId(options.getBigqueryDatasetId());
+        tableRef.setTableId(options.getBigqueryTableId());
         return tableRef;
     }
 
@@ -64,10 +57,10 @@ public class DataPipeline {
         return fieldDefs;
     }
 
-    public void buildPipeline(GCSPipelineOptions options){
+    public void buildPipeline(BigqueryOptions options){
         Pipeline pipeline = Pipeline.create(options);
 
-        TableReference tableRef = createLogTabelReference();
+        TableReference tableRef = createLogTabelReference(options);
         List<TableFieldSchema> logTabelSchema = createLogTabelSchema();
 
         PCollection<Player> playerScore = pipeline
@@ -109,8 +102,8 @@ public class DataPipeline {
 
     public static void main(String[] args) throws IOException {
 
-        GCSPipelineOptions options =
-                PipelineOptionsFactory.fromArgs(args).withValidation().as(GCSPipelineOptions.class);
+        BigqueryOptions options =
+                PipelineOptionsFactory.fromArgs(args).withValidation().as(BigqueryOptions.class);
         options.setStreaming(true);
 
         new DataPipeline().buildPipeline(options);

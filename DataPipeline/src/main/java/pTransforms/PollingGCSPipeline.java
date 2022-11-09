@@ -129,21 +129,26 @@ public class PollingGCSPipeline extends PTransform<PBegin, PCollection<FileIO.Re
         directories =
                 input
                         .apply("StartPoll", Create.of(inputFilePattern))
+                        // PollFn that gets all the GCS bucket names
                         .apply("FindFiles",
                                 Watch.growthOf(new GCSPollFn(1, 1, this.rfcStartDateTime, "/"))
                                         .withPollInterval(Duration.standardSeconds(60)))
                     .apply(Values.create());
 
         return directories
+                // Add ** so it checks all the files in the bucket
                 .apply(
                         "GetDirectoryGlobs",
                         MapElements.into(TypeDescriptors.strings()).via(path -> path + "**"))
                 .apply(
                         "MatchFiles",
+                        // Get all files in the given buckets
                         FileIO.matchAll()
-                                .continuously(
+                             .continuously(
+                                  // Check for files every 5 seconds
                                         Duration.standardSeconds(5),
-                                        Watch.Growth.afterTimeSinceNewOutput(Duration.standardMinutes(10))))
+                                        //Stop checking the bucket after 60 minutes to free memory.
+                                        Watch.Growth.afterTimeSinceNewOutput(Duration.standardMinutes(60))))
                 .apply("ReadFiles", FileIO.readMatches());
     }
 }
