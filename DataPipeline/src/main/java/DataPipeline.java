@@ -23,6 +23,7 @@ import java.util.List;
 public class DataPipeline {
 
     static class PlayerToTableRow extends DoFn<Player, TableRow> {
+
         @ProcessElement
         public void processElement(ProcessContext c) {
             // Use OutputReceiver.output to emit the output element.

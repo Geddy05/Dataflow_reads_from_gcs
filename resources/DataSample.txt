@@ -1,0 +1,7 @@
+{"username":"jolie.miller","userId":106,"teamId":3,"points":40,"timestamp":"2022-11-10T08:20:17Z"}
+{"username":"larry.farrell","userId":60,"teamId":18,"points":21,"timestamp":"2022-11-10T08:20:18Z"}
+{"username":"viola.dietrich","userId":122,"teamId":38,"points":70,"timestamp":"2022-11-10T08:20:19Z"}
+{"username":"mia.rath","userId":63,"teamId":23,"points":58,"timestamp":"2022-11-10T08:20:20Z"}
+{"username":"deanna.wehner","userId":77,"teamId":7,"points":9,"timestamp":"2022-11-10T08:20:20Z"}
+{"username":"liam.deckow","userId":95,"teamId":18,"points":16,"timestamp":"2022-11-10T08:20:21Z"}
+{"username":"tara.heidenreich","userId":71,"teamId":17,"points":87,"timestamp":"2022-11-10T08:20:22Z"}
